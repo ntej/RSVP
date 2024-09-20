@@ -4,9 +4,9 @@
 <p>RSVP managment APIs built using node express. App is deployed in AWS and have basic HTML UI for demonstration purpose. For database  Mongodb Atlas service is used and final application is containarized and deployed on AWS.
 </p>
 
-<a href="http://rsvp-loadbalancer-1323748626.us-east-1.elb.amazonaws.com/api-docs/" target="_blank">Swagger Specs</a>
+<a href="http://rsvp-loadbalancer-889922805.us-east-1.elb.amazonaws.com/api-docs/" target="_blank">Swagger Specs</a>
 
-<a href="http://rsvp-loadbalancer-1323748626.us-east-1.elb.amazonaws.com/" target="_blank">APIs UI Demonstration </a>
+<a href="http://rsvp-loadbalancer-889922805.us-east-1.elb.amazonaws.com/" target="_blank">APIs UI Demonstration </a>
 
 
 <h3>Tech stack Used</h3>

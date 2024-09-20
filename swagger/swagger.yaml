@@ -1,0 +1,183 @@
+swagger: "2.0"
+info:
+  title: RSVP Management
+  description: APIs to Manage RSVP.
+  version: 1.0.0
+
+schemes:
+  - http
+
+paths:
+  /api/v1/rsvp:
+    get:
+      summary: Returns a list of RSVPs.
+      description: Returns all the available RSVPs.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Response body with list of RSVPs
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/RSVP_Response_Body"
+        500:
+          description: Error with error msg in response body
+    post:
+      summary: Adds RSVP.
+      description: Adds RSVP. RSVP should be provided in request body. firstname, lastname, email, and phone are mandatory.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: RSVP
+          description: The RSVP user to create
+          schema:
+            $ref: "#/definitions/RSVP_Request_Body"
+      responses:
+        200:
+          description: Response body with created RSVP
+          schema:
+            $ref: "#/definitions/RSVP_Response_Body"
+        500:
+          description: Error with error msg in responsebody
+
+  /api/v1/rsvp/{id}:
+    get:
+      summary: Gets a RSVP by ID.
+      description: Retrieves a RSVP by ID provided in the route parameter.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: RSVP ID
+          required: true
+      responses:
+        200:
+          description: Response body with Retrieved RSVP
+          schema:
+            $ref: "#/definitions/RSVP_Response_Body"
+        500:
+          description: Error with error msg in responsebody
+
+    patch:
+      summary: Updates RSVP.
+      description: Updates RSVP. Provide only fields that need to be updated. The ID should be passed.
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: RSVP ID
+          required: true
+        - in: body
+          name: RSVP
+          description: The RSVP fields to edit. Only fields that need to be updated.
+          schema:
+            $ref: "#/definitions/RSVP_Request_Body"
+      responses:
+        200:
+          description: Response body with updated RSVP
+          schema:
+            $ref: "#/definitions/RSVP_Response_Body"
+        500:
+          description: Error with error msg in responsebody
+
+    delete:
+      summary: Deletes a RSVP by ID.
+      description: Deletes a RSVP by ID provided in the route parameter.
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          type: string
+          description: RSVP ID
+          required: true
+      responses:
+        200:
+          description: Response body with deleted RSVP
+          schema:
+            $ref: "#/definitions/RSVP_Response_Body"
+        500:
+          description: Error with error msg in responsebody
+
+definitions:
+  RSVP_Request_Body:
+    type: object
+    required:
+      - firstname
+      - lastname
+      - email
+      - phone
+    properties:
+      firstname:
+        type: string
+        description: First name for the RSVP
+      lastname:
+        type: string
+        description: Last name for the RSVP
+      email:
+        type: string
+        description: Email for the RSVP
+      phone:
+        type: string
+        description: Phone number for the RSVP
+      peoplecount:
+        type: number
+        description: Number of people for the RSVP. Default is 0
+      attending:
+        type: integer
+        description: Attendance for the RSVP. -1 as NO, 0 as Maybe, 1 as Yes. Default is -1
+    example:
+      firstname: "Peter"
+      lastname: "Griffin"
+      email: "peter.griffin@familyguy.com"
+      phone: "7575708777"
+      peoplecount: 3
+      attending: -1
+
+  RSVP_Response_Body:
+    type: object
+    required:
+      - firstname
+      - lastname
+      - email
+      - phone
+    properties:
+      _id:
+        type: string
+        description: Unique ID generated when creating RSVP
+      firstname:
+        type: string
+        description: First name for the RSVP
+      lastname:
+        type: string
+        description: Last name for the RSVP
+      email:
+        type: string
+        description: Email for the RSVP
+      phone:
+        type: string
+        description: Phone number for the RSVP
+      peoplecount:
+        type: number
+        description: Number of people for the RSVP. Default is 0
+      attending:
+        type: integer
+        description: Attendance for the RSVP. -1 as NO, 0 as Maybe, 1 as Yes. Default is -1
+    example:
+      _id: "66ea5cc6801ea5e114fed60d"
+      firstname: "Peter"
+      lastname: "Griffin"
+      email: "peter.griffin@familyguy.com"
+      phone: "7575708777"
+      peoplecount: 3
+      attending: -1

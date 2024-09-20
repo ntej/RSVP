@@ -1,0 +1,365 @@
+<!--UI is not perfect. Just for testing purpose. Working on swagger docs-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            background-color: #007bff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .edit,
+        .delete {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        .edit:hover,
+        .delete:hover {
+            color: #0056b3;
+        }
+
+        .form-container {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+        }
+
+        .form-container input,
+        .form-container button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .form-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .form-container label {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-container button {
+            background-color: #28a745;
+        }
+
+        .form-container button:hover {
+            background-color: #218838;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 400px;
+        }
+
+        .popup-content button {
+            background-color: #dc3545;
+        }
+
+        .popup-content button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>RSVP Management</h1>
+
+    <div class="form-container">
+        <h2 id="form-title">Add New RSVP</h2>
+        <form id="rsvp-form">
+            <input type="text" id="firstname" placeholder="First Name" required>
+            <input type="text" id="lastname" placeholder="Last Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="text" id="phone" placeholder="Phone" required>
+            <input type="number" id="peoplecount" placeholder="People Count" required>
+            <label>
+                Attending
+                <select name="Attending" id="attending">
+                    <option value=-1>No</option>
+                    <option value=0>Maybe</option>
+                    <option value=1>Yes</option>
+                </select>
+            </label>
+            <button type="submit" id="submit-btn">Add RSVP</button>
+        </form>
+    </div>
+
+    <h2>All RSVPs</h2>
+    <table id="rsvp-table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>People Count</th>
+                <th>Attending</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <!-- <div class="error-container">
+        <h2 id="error-message">"Error Message Goes Here"</h2>
+    </div> -->
+
+    <!-- Confirmation Popup -->
+    <div id="confirm-popup" class="popup">
+        <div class="popup-content">
+            <p>Are you sure you want to delete this RSVP?</p>
+            <button onclick="confirmDelete()">Yes</button>
+            <button onclick="closePopup()">No</button>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = '';
+        let deleteId = '';
+        const baseUrl = '/api/v1/rsvp/';
+
+        async function fetchAllRSVPs() {
+            const response = await fetch(baseUrl);
+            const data = await response.json();
+            const tableBody = document.querySelector('#rsvp-table tbody');
+            tableBody.innerHTML = '';
+            data.forEach(rsvp => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rsvp.firstname}</td>
+                    <td>${rsvp.lastname}</td>
+                    <td>${maskEmail(rsvp.email)}</td>
+                    <td>${maskPhone(rsvp.phone)}</td>
+                    <td>${rsvp.peoplecount}</td>
+                    <td>${getAttendenceString(rsvp.attending)}</td>
+                    <td>
+                        <span class="edit" onclick="editRSVP('${rsvp._id}')">Edit</span>
+                        <span class="delete" onclick="openPopup('${rsvp._id}')">Delete</span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function editRSVP(id) {
+            const response = await fetch(baseUrl + id);
+            const rsvp = await response.json();
+            document.getElementById('firstname').value = rsvp.firstname;
+            document.getElementById('lastname').value = rsvp.lastname;
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('peoplecount').value = rsvp.peoplecount;
+            document.getElementById('attending').value = rsvp.attending;
+            document.getElementById('submit-btn').textContent = 'Update RSVP';
+            document.getElementById('form-title').textContent = 'Edit RSVP';
+            currentEditId = id;
+        }
+
+        function openPopup(id) {
+            deleteId = id;
+            document.getElementById('confirm-popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('confirm-popup').style.display = 'none';
+        }
+
+        async function confirmDelete() {
+            await fetch(baseUrl + deleteId, { method: 'DELETE' });
+            closePopup();
+            fetchAllRSVPs();
+        }
+
+        document.getElementById('rsvp-form').addEventListener('submit', async (e) => {
+            // try {
+            e.preventDefault();
+            const rsvpData = {
+                firstname: document.getElementById('firstname').value,
+                lastname: document.getElementById('lastname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                peoplecount: parseInt(document.getElementById('peoplecount').value, 10),
+                attending: document.getElementById('attending').value,
+            };
+
+            if (currentEditId) {
+                console.log('I am here');
+                
+                // Update RSVP
+                const res = await fetch(baseUrl + currentEditId, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rsvpData),
+                });
+                // const {msg} = res.body
+                // console.log(`resBodyMessage: ${msg}`);
+
+
+                // Check if the response is not ok (status not in 200-299 range)
+                if (!res.ok) {
+                    const resBody = await res.json();  // Parse the response body as JSON
+                    //document.getElementById('error-message').textContent = resBody.msg;
+                    alert(resBody.msg)
+                } else {
+                    alert('RSVP updated successfully')
+                }
+                currentEditId = '';
+                document.getElementById('submit-btn').textContent = 'Add RSVP';
+                document.getElementById('form-title').textContent = 'Add New RSVP';
+            } else {
+                // Add New RSVP
+                const res =   await fetch(baseUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rsvpData),
+                });
+
+                  // Check if the response is not ok (status not in 200-299 range)
+                  if (!res.ok) {
+                    const resBody = await res.json();  // Parse the response body as JSON
+                    //document.getElementById('error-message').textContent = resBody.msg;
+                    alert(resBody.msg)
+                } else {
+                    alert('RSVP created successfully')
+                }
+
+            }
+            document.getElementById('rsvp-form').reset();
+            fetchAllRSVPs();
+
+
+            // } catch (error) {
+
+            // }
+        });
+
+        // Load all RSVPs on page load
+        window.onload = fetchAllRSVPs;
+
+        function maskPhone(phone) {
+            // Mask everything except the last 4 digits
+            return phone.replace(/.(?=.{4})/g, '*');
+        }
+
+        function maskEmail(email) {
+            // Split the email into username and domain
+            let [user, domain] = email.split('@');
+            // Mask part of the username, keeping the first character and the domain intact
+            let maskedUser = user[0] + user.slice(1).replace(/./g, '*');
+            return maskedUser + '@' + domain;
+        }
+
+        const YES_STRING = 'Yes'
+        const NO_STRING = 'No'
+        const MayBe_STRING = 'Maybe'
+
+        function getAttendenceString(attendenceValue) {
+            let attendenceString
+
+            if (attendenceValue === -1) {
+                attendenceString = NO_STRING
+
+            } else if (attendenceValue === 0) {
+                attendenceString = MayBe_STRING
+
+            } else {
+                attendenceString = YES_STRING
+
+            }
+            return attendenceString
+        }
+
+        function getAttendenceValue(attendenceString) {
+
+            let attendenceValue
+
+            if (attendenceString === NO_STRING) {
+                attendenceValue = -1
+
+            } else if (attendenceString === MayBe_STRING) {
+                attendenceValue === 0
+
+            } else {
+                attendenceValue = 1
+
+            }
+            return attendenceValue
+        }
+    </script>
+</body>
+
+</html>

@@ -31,5 +31,5 @@
 
 <h3>Note</h3>
 
-<p>Currently Swagger API docs uses prod server. So data manipulated in swagger UI reflects in realtime. This project is done purly for learning purposes and reference, it is not following industry standard practices.</p>
+<p>Currently Swagger API docs uses prod server. So data manipulated in swagger UI reflects in realtime. This project is done purly for learning purposes and reference.</p>
 

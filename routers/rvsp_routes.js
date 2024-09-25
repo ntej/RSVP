@@ -1,18 +1,20 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 const {
-    getRvsp,
-    getRvsps,
-    createRvsp,
-    updateRvsp,
-    deleteRvsp
-} = require('../controllers/rvsp_controller')
+  getRvsp,
+  getRvsps,
+  createRvsp,
+  updateRvsp,
+  deleteRvsp,
+} = require("../controllers/rvsp_controller");
 
+const {checkDeleteScope,checkReadScope,checkWriteScope,checkUpdateScope} = require("../middleware/authenticate");
 
-router.route('/').get(getRvsps)
-router.route('/:id').get(getRvsp)
-router.route('/').post(createRvsp)
-router.route('/:id').patch(updateRvsp)
-router.route('/:id').delete(deleteRvsp)
+//Admin scope
+router.route("/").get(checkReadScope,getRvsps); 
+router.route("/:id").get(checkReadScope,getRvsp);
+router.route("/").post(checkWriteScope,createRvsp);
+router.route("/:id").patch(checkUpdateScope,updateRvsp);
+router.route("/:id").delete(checkDeleteScope,deleteRvsp); 
 
-module.exports = router
+module.exports = router;

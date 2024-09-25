@@ -8,15 +8,18 @@ const swaggerUi = require('swagger-ui-express')
 const app = express()
 const YAML = require('yamljs')
 
+const {checkJwt} = require('./middleware/authenticate')
+
 const PORT = process.env.port || 3000 //Take process port(depends on which machine app is running) or 3000
 
 //Order is important!!!
 app.use(express.json()) //Middleware for parsing the json request body
-app.use(express.static('./ui'))
+//app.use(express.static('./ui'))
 
 const swaggerDoxument = YAML.load('./swagger/swagger.yaml')
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerDoxument))
 
+app.use(checkJwt) //Authentication
 
 app.use('/api/v1/rsvp',router)//Middleware for all defined API routes
 app.use(notFound)//Middleware to handle unknow API routes
@@ -26,7 +29,7 @@ app.use(errorHandler)//Error Handler middleware. All errors are forwaded here
 const start = async ()=>{
     try {
         await connectDB(process.env.MONGO_URI) //Initiate DB connection.Returns promise
-        
+                
         console.log('Connect to DB');
         
         app.listen(PORT,()=>{

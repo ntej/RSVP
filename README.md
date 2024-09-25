@@ -4,6 +4,6 @@
 
 <p>APIs can be only accessed by two clients. Client1(user) : can update, read and write, Client2(admin) : along with update, read and write can also delete the RSVP. Scopes have been used to achieve the functionality.</p>
 
-<p>For testing token can be generated from js scripts in tools</p>
+<p>For testing, token can be generated using js scripts in tools</p>
 
 <p>.env content is needed, will be provided if asked</p>

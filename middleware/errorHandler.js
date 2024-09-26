@@ -1,6 +1,7 @@
 const {RSVPApiError} = require('../errors/custom-error')
 
 const errorHandler = (err,req,res,next)=>{
+   console.log(err);
     if(err instanceof RSVPApiError){
        return res.status(err.statusCode).json({msg:err.message})
     }

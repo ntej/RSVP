@@ -8,19 +8,35 @@ const swaggerUi = require('swagger-ui-express')
 const app = express()
 const YAML = require('yamljs')
 
+const authRouter = require('./middleware/authenticate')
+const { requiresAuth } = require('express-openid-connect');
+
+
 const PORT = process.env.port || 3000 //Take process port(depends on which machine app is running) or 3000
 
 //Order is important!!!
 app.use(express.json()) //Middleware for parsing the json request body
-app.use(express.static('./ui'))
+//app.use(express.static('./ui'))
 
 const swaggerDoxument = YAML.load('./swagger/swagger.yaml')
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerDoxument))
 
 
+
+app.use(authRouter) // auth router attaches /login, /logout, and /callback routes to the baseURL
 app.use('/api/v1/rsvp',router)//Middleware for all defined API routes
+
+app.get('/profile', requiresAuth(), (req, res) => {
+    res.send(JSON.stringify(req.oidc.user));
+  });
+
 app.use(notFound)//Middleware to handle unknow API routes
 app.use(errorHandler)//Error Handler middleware. All errors are forwaded here
+
+// req.isAuthenticated is provided from the auth router
+app.get('/', (req, res) => {
+    res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+  });
 
 
 const start = async ()=>{
